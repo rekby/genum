@@ -101,6 +101,89 @@ func TestEnumHolder_FromInt(t *testing.T) {
 	})
 }
 
+func TestEnumHolder_FromString(t *testing.T) {
+	type p int
+	holder := NewHolder[p]()
+	vMinus := holder.New(-1, "minus")
+	v0 := holder.New(0, "zero")
+	v1 := holder.New(1, "one")
+
+	t.Run("ok", func(t *testing.T) {
+		parsed, err := holder.FromString("minus")
+		require.NoError(t, err)
+		require.Equal(t, vMinus, parsed)
+
+		parsed, err = holder.FromString("zero")
+		require.NoError(t, err)
+		require.Equal(t, v0, parsed)
+
+		parsed, err = holder.FromString("one")
+		require.NoError(t, err)
+		require.Equal(t, v1, parsed)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		parsed, err := holder.FromString("asd")
+		require.Error(t, err)
+		require.Equal(t, v0, parsed)
+	})
+}
+
+func TestEnumHolder_New(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		type p int
+		h := NewHolder[p]()
+		h.New(0, "zero")
+		h.New(1, "one")
+		require.Equal(t, map[string]int{"zero": 0, "one": 1}, h.stringToInt)
+		require.Equal(t, map[int]string{0: "zero", 1: "one"}, h.intToString)
+	})
+
+	t.Run("DoubleInt", func(t *testing.T) {
+		type p int
+		h := NewHolder[p]()
+		h.New(0, "zero")
+		require.Panics(t, func() {
+			h.New(0, "one")
+		})
+	})
+
+	t.Run("DoubleString", func(t *testing.T) {
+		type p int
+		h := NewHolder[p]()
+		h.New(0, "zero")
+		require.Panics(t, func() {
+			h.New(1, "zero")
+		})
+	})
+}
+
+func TestEnumValue_Int(t *testing.T) {
+	type p int
+
+	holder := NewHolder[p]()
+	v0 := holder.New(0, "zero")
+	v5 := holder.New(5, "five")
+	v2 := holder.New(2, "two")
+
+	require.Equal(t, 0, v0.Int())
+	require.Equal(t, 2, v2.Int())
+	require.Equal(t, 5, v5.Int())
+}
+
+func TestEnumValue_String(t *testing.T) {
+	type p int
+
+	holder := NewHolder[p]()
+	v0 := holder.New(0, "zero")
+	v5 := holder.New(5, "five")
+	v2 := holder.New(2, "two")
+
+	require.Equal(t, "zero", v0.String())
+	require.Equal(t, "two", v2.String())
+	require.Equal(t, "five", v5.String())
+}
+
 func TestSetPanicOnUnexistedValues(t *testing.T) {
 	// check default value
 	require.False(t, panicOnEnexistedValues)

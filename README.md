@@ -29,36 +29,37 @@ var (
 ```
 
 Usage enum values:
+
 ```go
     package example
 
-    import "fmt"
-    import "github.com/rekby/genum/example/favnumber"
+import "fmt"
+import "github.com/rekby/genum/example_favnumber"
 
-    func ExampleUsage() {
-		one := favnumber.One
-		five, _ := favnumber.Holder.FromString("five")
+func ExampleUsage() {
+	one := favnumber.One
+	five, _ := favnumber.Holder.FromString("five")
 
-		var min favnumber.FavoriteNumber
-		if one.Int() < five.Int() {
-			min = one
-		} else {
-			min = five
-		}
-		fmt.Printf("min: %v\n", min)
-
-		isFirst := false
-		parsed, _ := favnumber.Holder.FromInt(1)
-		switch parsed {
-		case favnumber.One:
-			isFirst = true
-		default:
-			isFirst = false
-		}
-
-		fmt.Printf("isFirst: %v", isFirst)
-		// Output:
-		// min: one
-		// isFirst: true
+	var min favnumber.FavoriteNumber
+	if one.Int() < five.Int() {
+		min = one
+	} else {
+		min = five
 	}
+	fmt.Printf("min: %v\n", min)
+
+	isFirst := false
+	parsed, _ := favnumber.Holder.FromInt(1)
+	switch parsed {
+	case favnumber.One:
+		isFirst = true
+	default:
+		isFirst = false
+	}
+
+	fmt.Printf("isFirst: %v", isFirst)
+	// Output:
+	// min: one
+	// isFirst: true
+}
 ```
