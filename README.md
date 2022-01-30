@@ -1,5 +1,8 @@
 Enum emulation based on go generics, introduced from go 1.18.
 
+Roadmap:
+- genum linter for check exhaustive switch 
+
 Usage example:
 
 Declare enum values
