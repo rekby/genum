@@ -30,13 +30,6 @@ func TestNewHolder(t *testing.T) {
 		})
 	})
 
-	t.Run("HolderForDefaultType", func(t *testing.T) {
-		holders := newHolders()
-		require.Panics(t, func() {
-			newHolder(holders)
-		})
-	})
-
 	t.Run("TwoHoldersForSameType", func(t *testing.T) {
 		type p int
 		holders := newHolders()
