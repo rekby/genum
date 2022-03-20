@@ -1,4 +1,6 @@
 Enum emulation based on go generics, introduced from go 1.18.
+The package allow compile time gurantee about enum-ed var can't contains
+value outside from enum definition
 
 Roadmap:
 - genum linter for check exhaustive switch 
