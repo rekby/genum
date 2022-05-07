@@ -6,6 +6,7 @@ import (
 	"github.com/rekby/genum/example/favnumber"
 )
 
+//nolint:govet
 func ExampleDefaultValue() {
 	var test favnumber.FavoriteNumber
 	fmt.Println(test.Int())
@@ -15,6 +16,7 @@ func ExampleDefaultValue() {
 	// zero
 }
 
+//nolint:govet
 func ExampleFromInt() {
 	val, _ := favnumber.Holder.FromInt(1)
 	fmt.Println(val.Int())
@@ -24,6 +26,7 @@ func ExampleFromInt() {
 	// one
 }
 
+//nolint:govet
 func ExampleFromString() {
 	val, _ := favnumber.Holder.FromString("five")
 	fmt.Println(val.Int())
@@ -34,6 +37,7 @@ func ExampleFromString() {
 	// five
 }
 
+//nolint:govet
 func ExampleSwitch() {
 	one := favnumber.One
 	switch one {
@@ -51,6 +55,7 @@ func ExampleSwitch() {
 	// Found one
 }
 
+//nolint:govet
 func ExampleUsage() {
 	one := favnumber.One
 	five, _ := favnumber.Holder.FromString("five")
