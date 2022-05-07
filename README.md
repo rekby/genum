@@ -1,6 +1,6 @@
 Enum emulation based on go generics, introduced from go 1.18.
-The package allow compile time gurantee about enum-ed var can't contains
-value outside from enum definition
+The package allow compile time gurantee about enum-ed var can't contains value outside from enum definition.
+No allocations after initialization.
 
 Roadmap:
 - genum linter for check exhaustive switch 
@@ -64,4 +64,20 @@ func ExampleUsage() {
 	// min: one
 	// isFirst: true
 }
+```
+
+## Benchmarks
+```
+go test -test.bench=. -test.benchmem ./benchmarks
+goos: darwin
+goarch: arm64
+pkg: github.com/rekby/genum/benchmarks
+BenchmarkSwitchIntEnum-10               335044386                3.416 ns/op           0 B/op          0 allocs/op
+BenchmarkSwitchGEnum-10                 192531540                6.227 ns/op           0 B/op          0 allocs/op
+BenchmarkStringIntWithStringer-10       460761220                2.640 ns/op           0 B/op          0 allocs/op
+BenchmarkStringGEnum-10                 81390418                13.84 ns/op            0 B/op          0 allocs/op
+BenchmarkToStringGenumWithHolder-10     333978289                3.567 ns/op           0 B/op          0 allocs/op
+BenchmarkFromIntInt-10                  1000000000               0.3111 ns/op          0 B/op          0 allocs/op
+BenchmarkFromIntGEnum-10                428099434                2.828 ns/op           0 B/op          0 allocs/op
+BenchmarkFromStringGEnum-10             425914281                2.766 ns/op           0 B/op          0 allocs/op
 ```

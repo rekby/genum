@@ -128,6 +128,10 @@ func (h *EnumHolder[T]) FromString(s string) (EnumValue[T], error) {
 	return zero, errors.New("string value doesn't exist for the enum")
 }
 
+func (h *EnumHolder[T]) ValueToString(v EnumValue[T]) string {
+	return h.intToString[v.Int()]
+}
+
 // All return all available enum values in int value order
 func (h *EnumHolder[T]) All() []EnumValue[T] {
 	res := make([]EnumValue[T], 0, len(h.intToString))
