@@ -92,6 +92,15 @@ func BenchmarkFromIntGEnum(b *testing.B) {
 	_, _ = io.Discard.Write([]byte(v.String()))
 }
 
+func BenchmarkFromIntGEnumUnsafe(b *testing.B) {
+	var v genumenum.Variant
+	for i := 0; i < b.N; i++ {
+		v = genumenum.FromIntUnsafe(1)
+	}
+	b.StopTimer()
+	_, _ = io.Discard.Write([]byte(v.String()))
+}
+
 func BenchmarkFromStringGEnum(b *testing.B) {
 	var v genumenum.Variant
 	b.ResetTimer()
