@@ -44,7 +44,7 @@ func (enum EnumValue[T]) String() string {
 func (enum EnumValue[T]) string(holders map[any]any, panicOnUnexisted bool) string {
 	var zero T
 
-	holder, ok := holders[zero].(*EnumHolder[T])
+	holder, ok := holders[zero].(*EnumHolderPublic[T])
 	if !ok {
 		res := fmt.Sprintf("Unexisted holder for type: %v", reflect.TypeOf(zero))
 		if panicOnUnexisted {
@@ -64,17 +64,12 @@ func (enum EnumValue[T]) string(holders map[any]any, panicOnUnexisted bool) stri
 	return res
 }
 
-type EnumHolder[T privateType] struct {
+type EnumHolderPublic[T privateType] struct {
 	intToString map[int]string
 	stringToInt map[string]int
 }
 
-// NewHolder must be called ini init state/thread only
-func NewHolder[T privateType]() *EnumHolder[T] {
-	return newHolder[T](globalHolders)
-}
-
-func newHolder[T privateType](m map[any]any) *EnumHolder[T] {
+func newHolder[T privateType](m map[any]any) *EnumHolderPublic[T] {
 	var zero T
 	refType := reflect.TypeOf(zero)
 	if refType == reflect.TypeOf(0) {
@@ -89,7 +84,7 @@ func newHolder[T privateType](m map[any]any) *EnumHolder[T] {
 		panic(fmt.Sprintf("Holder already exist for type: %v", reflect.TypeOf(zero)))
 	}
 
-	holder := &EnumHolder[T]{
+	holder := &EnumHolderPublic[T]{
 		intToString: make(map[int]string),
 		stringToInt: make(map[string]int),
 	}
@@ -97,8 +92,44 @@ func newHolder[T privateType](m map[any]any) *EnumHolder[T] {
 	return holder
 }
 
+func (h *EnumHolderPublic[T]) FromInt(val int) (EnumValue[T], error) {
+	if _, ok := h.intToString[val]; ok {
+		return EnumValue[T]{val: val}, nil
+	}
+	var zero EnumValue[T]
+	return zero, errors.New("int value doesn't exist for the enum")
+}
+
+func (h *EnumHolderPublic[T]) FromString(s string) (EnumValue[T], error) {
+	if val, ok := h.stringToInt[s]; ok {
+		return EnumValue[T]{val: val}, nil
+	}
+	var zero EnumValue[T]
+	return zero, errors.New("string value doesn't exist for the enum")
+}
+
+func (h *EnumHolderPublic[T]) ValueToString(v EnumValue[T]) string {
+	return h.intToString[v.Int()]
+}
+
+// All return all available enum values in int value order
+func (h *EnumHolderPublic[T]) All() []EnumValue[T] {
+	res := make([]EnumValue[T], 0, len(h.intToString))
+	for v := range h.intToString {
+		res = append(res, EnumValue[T]{val: v})
+	}
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].val < res[j].val
+	})
+	return res
+}
+
+type EnumHolderPrivate[T privateType] struct {
+	*EnumHolderPublic[T]
+}
+
 // New must call only from init state/goroutine
-func (h *EnumHolder[T]) New(val int, name string) EnumValue[T] {
+func (h *EnumHolderPrivate[T]) New(val int, name string) EnumValue[T] {
 	if _, exist := h.intToString[val]; exist {
 		var zero T
 		panic(fmt.Sprintf("Value already exist: %v for type: %v", val, reflect.TypeOf(zero)))
@@ -112,34 +143,21 @@ func (h *EnumHolder[T]) New(val int, name string) EnumValue[T] {
 	return EnumValue[T]{val: val}
 }
 
-func (h *EnumHolder[T]) FromInt(val int) (EnumValue[T], error) {
-	if _, ok := h.intToString[val]; ok {
-		return EnumValue[T]{val: val}, nil
-	}
-	var zero EnumValue[T]
-	return zero, errors.New("int value doesn't exist for the enum")
+// UnsafeFromInt create EnumValue value with raw val without check.
+// val MUST be valid raw value for type - value, created by UnsafeFromInt has not guaranties about correct internal value
+// it need only for optimization of hot way, when val can checked by external code.
+func (h *EnumHolderPrivate[T]) UnsafeFromInt(val int) EnumValue[T] {
+	return EnumValue[T]{val: val}
 }
 
-func (h *EnumHolder[T]) FromString(s string) (EnumValue[T], error) {
-	if val, ok := h.stringToInt[s]; ok {
-		return EnumValue[T]{val: val}, nil
-	}
-	var zero EnumValue[T]
-	return zero, errors.New("string value doesn't exist for the enum")
-}
-
-func (h *EnumHolder[T]) ValueToString(v EnumValue[T]) string {
-	return h.intToString[v.Int()]
-}
-
-// All return all available enum values in int value order
-func (h *EnumHolder[T]) All() []EnumValue[T] {
-	res := make([]EnumValue[T], 0, len(h.intToString))
-	for v := range h.intToString {
-		res = append(res, EnumValue[T]{val: v})
-	}
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].val < res[j].val
-	})
-	return res
+// NewHolders must be called ini init state/thread only
+// It return two holders: public and private.
+// public holder can assign to public global values - it is safe from used by external code: check values, get all
+// possible values, fast conversion to string, etc.
+// private holder must be assigned to private value (usually global) it will use for define expected values and
+// access to Unsafe... methods if need.
+func NewHolders[T privateType]() (*EnumHolderPublic[T], *EnumHolderPrivate[T]) {
+	public := newHolder[T](globalHolders)
+	private := &EnumHolderPrivate[T]{EnumHolderPublic: public}
+	return public, private
 }

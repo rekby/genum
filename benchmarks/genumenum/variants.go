@@ -8,9 +8,13 @@ type p genum.BaseType
 type Variant = genum.EnumValue[p] // define as alias - for save methods
 
 var (
-	Holder = genum.NewHolder[p]()
+	Holder, holderPrivate = genum.NewHolders[p]()
 
-	A = Holder.New(0, "A")
-	B = Holder.New(1, "B")
-	C = Holder.New(2, "C") // It is ok for sparse range with spaces in enum values
+	A = holderPrivate.New(0, "A")
+	B = holderPrivate.New(1, "B")
+	C = holderPrivate.New(2, "C") // It is ok for sparse range with spaces in enum values
 )
+
+func FromIntUnsafe(val int) Variant {
+	return holderPrivate.UnsafeFromInt(val)
+}

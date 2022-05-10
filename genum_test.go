@@ -10,17 +10,23 @@ func newHolders() map[any]any {
 	return make(map[any]any)
 }
 
+func newPrivateHolder[p privateType](holders map[any]any) EnumHolderPrivate[p] {
+	public := newHolder[p](holders)
+	private := EnumHolderPrivate[p]{public}
+	return private
+}
+
 func TestNewHolder(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		type p int
 
 		holders := newHolders()
-		h1 := newHolder[p](holders)
+		h1 := newPrivateHolder[p](holders)
 		require.NotNil(t, h1)
 		require.Len(t, holders, 1)
 
 		var zero p
-		require.Equal(t, h1, holders[zero])
+		require.Equal(t, h1.EnumHolderPublic, holders[zero])
 	})
 
 	t.Run("HolderForInt", func(t *testing.T) {
@@ -53,7 +59,7 @@ func TestEnumHolder_All(t *testing.T) {
 		type p int
 		type enumType = EnumValue[p]
 		holders := newHolders()
-		holder := newHolder[p](holders)
+		holder := newPrivateHolder[p](holders)
 		v2 := holder.New(2, "2")
 		v1 := holder.New(1, "1")
 		require.Equal(t, []enumType{v1, v2}, holder.All())
@@ -68,7 +74,7 @@ func TestEnumHolder_All(t *testing.T) {
 
 func TestEnumHolder_FromInt(t *testing.T) {
 	type p int
-	holder := NewHolder[p]()
+	_, holder := NewHolders[p]()
 	vMinus := holder.New(-1, "minus")
 	v0 := holder.New(0, "zero")
 	v1 := holder.New(1, "one")
@@ -96,7 +102,7 @@ func TestEnumHolder_FromInt(t *testing.T) {
 
 func TestEnumHolder_FromString(t *testing.T) {
 	type p int
-	holder := NewHolder[p]()
+	_, holder := NewHolders[p]()
 	vMinus := holder.New(-1, "minus")
 	v0 := holder.New(0, "zero")
 	v1 := holder.New(1, "one")
@@ -125,7 +131,7 @@ func TestEnumHolder_FromString(t *testing.T) {
 func TestEnumHolder_New(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		type p int
-		h := NewHolder[p]()
+		_, h := NewHolders[p]()
 		h.New(0, "zero")
 		h.New(1, "one")
 		require.Equal(t, map[string]int{"zero": 0, "one": 1}, h.stringToInt)
@@ -134,7 +140,7 @@ func TestEnumHolder_New(t *testing.T) {
 
 	t.Run("DoubleInt", func(t *testing.T) {
 		type p int
-		h := NewHolder[p]()
+		_, h := NewHolders[p]()
 		h.New(0, "zero")
 		require.Panics(t, func() {
 			h.New(0, "one")
@@ -143,7 +149,7 @@ func TestEnumHolder_New(t *testing.T) {
 
 	t.Run("DoubleString", func(t *testing.T) {
 		type p int
-		h := NewHolder[p]()
+		_, h := NewHolders[p]()
 		h.New(0, "zero")
 		require.Panics(t, func() {
 			h.New(1, "zero")
@@ -154,7 +160,7 @@ func TestEnumHolder_New(t *testing.T) {
 func TestEnumValue_Int(t *testing.T) {
 	type p int
 
-	holder := NewHolder[p]()
+	_, holder := NewHolders[p]()
 	v0 := holder.New(0, "zero")
 	v5 := holder.New(5, "five")
 	v2 := holder.New(2, "two")
@@ -167,7 +173,7 @@ func TestEnumValue_Int(t *testing.T) {
 func TestEnumValue_String(t *testing.T) {
 	type p int
 
-	holder := NewHolder[p]()
+	_, holder := NewHolders[p]()
 	v0 := holder.New(0, "zero")
 	v5 := holder.New(5, "five")
 	v2 := holder.New(2, "two")
