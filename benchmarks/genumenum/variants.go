@@ -3,6 +3,7 @@ package genumenum
 import "github.com/rekby/genum"
 
 // Declare private type guarantee about the enum values (but zero value) can be created only from the package
+//nolint:unused
 type p genum.BaseType
 
 type Variant = genum.EnumValue[p] // define as alias - for save methods
