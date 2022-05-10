@@ -2,6 +2,7 @@ package genum
 
 import (
 	"encoding/binary"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -65,5 +66,66 @@ func FuzzEnumValueMarshalBinary(f *testing.F) {
 		readVar, readLen := binary.Varint(data)
 		require.Equal(t, int64(intVal), readVar)
 		require.Equal(t, len(data), readLen)
+	})
+}
+
+func FuzzEnumValueUnmarshalBinary(f *testing.F) {
+	f.Fuzz(func(t *testing.T, valExist bool, data []byte) {
+		if len(data) > 11 {
+			t.Skip("datalen")
+		}
+
+		rawVal, readLen := binary.Varint(data)
+		badDataLen := readLen != len(data)
+		t.Log("readval:", rawVal, readLen, badDataLen)
+
+		if rawVal > math.MaxInt {
+			t.Skip()
+		}
+
+		type p BaseType
+		type ValueType = EnumValue[p]
+
+		_, holder := NewHolders[p]()
+		defer func() {
+			deleteHolder[p]()
+		}()
+
+		if valExist {
+			_ = holder.New(int(rawVal), "val")
+		}
+
+		var val ValueType
+		err := val.UnmarshalBinary(data)
+		if !valExist || badDataLen || readLen <= 0 {
+			require.Error(t, err)
+		} else {
+			require.NoError(t, err)
+			require.Equal(t, rawVal, int64(val.val))
+		}
+	})
+}
+
+func FuzzEnumValueMarshalUnmarshalBinary(f *testing.F) {
+	f.Fuzz(func(t *testing.T, rawVal int64) {
+		if rawVal > math.MaxInt {
+			t.Skip()
+		}
+
+		type p BaseType
+		type valType = EnumValue[p]
+
+		_, holder := NewHolders[p]()
+		defer func() {
+			deleteHolder[p]()
+		}()
+		val := holder.New(int(rawVal), "val")
+		data, err := val.MarshalBinary()
+		require.NoError(t, err)
+
+		var val2 valType
+		err = val2.UnmarshalBinary(data)
+		require.NoError(t, err)
+		require.Equal(t, rawVal, int64(val2.Int()))
 	})
 }

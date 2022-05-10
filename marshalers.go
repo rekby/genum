@@ -18,7 +18,7 @@ func (enum EnumValue[T]) MarshalBinary() (data []byte, err error) {
 
 func (enum *EnumValue[T]) UnmarshalBinary(data []byte) error {
 	val, readBytes := binary.Varint(data)
-	if readBytes <= 0 {
+	if readBytes <= 0 || readBytes != len(data) {
 		return errors.New("genum: bad binary format")
 	}
 	holder, ok := getHolder[T]()
