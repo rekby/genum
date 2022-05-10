@@ -1,9 +1,13 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/rekby/genum.svg)](https://pkg.go.dev/github.com/rekby/genum)
+[![Coverage Status](https://coveralls.io/repos/github/rekby/genum/badge.svg?branch=master)](https://coveralls.io/github/rekby/genum?branch=master)
+
 Enum emulation based on go generics, introduced from go 1.18.
 
 In comparison with int-based enums:
 1. Has comparable performance (and workaround for same performance when need).
 2. Has method for parse value from string
 3. Compile-time gurantee about no unexpected values
+4. Without code generation
 
 The package allow compile time gurantee about enum-ed var can't contains value outside from enum definition.
 No allocations after initialization.
