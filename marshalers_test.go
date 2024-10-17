@@ -52,6 +52,54 @@ func TestBinaryMarshaler(t *testing.T) {
 	})
 }
 
+func TestTextMarshaler(t *testing.T) {
+	t.Run("Ok", func(t *testing.T) {
+		type p BaseType
+		type valueType = EnumValue[p]
+		_, holder := NewHolders[p]()
+
+		zero := holder.New(0, "zero")
+
+		otherVal := 123
+		other := holder.New(otherVal, "other")
+
+		// zero
+		var readValue valueType
+		dataBytes, err := zero.MarshalText()
+		require.NoError(t, err)
+		require.EqualValues(t, []byte("zero"), dataBytes)
+
+		err = readValue.UnmarshalText(dataBytes)
+		require.NoError(t, err)
+		require.Equal(t, zero, readValue)
+
+		// other
+		dataBytes, err = other.MarshalText()
+		require.NoError(t, err)
+		require.EqualValues(t, []byte("other"), dataBytes)
+
+		err = readValue.UnmarshalText(dataBytes)
+		require.NoError(t, err)
+		require.Equal(t, other, readValue)
+	})
+	t.Run("UnmarshalError", func(t *testing.T) {
+		type p BaseType
+		type varType = EnumValue[p]
+		_, holder := NewHolders[p]()
+		_ = holder.New(2, "two")
+
+		var val varType
+		t.Run("Empty", func(t *testing.T) {
+			require.Error(t, val.UnmarshalText(nil))
+		})
+		t.Run("Unexpected", func(t *testing.T) {
+			buf := make([]byte, 1)
+			binary.PutVarint(buf, 3)
+			require.Error(t, val.UnmarshalText(buf))
+		})
+	})
+}
+
 func FuzzEnumValueMarshalBinary(f *testing.F) {
 	f.Fuzz(func(t *testing.T, name string, intVal int) {
 		type p BaseType
