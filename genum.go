@@ -25,6 +25,12 @@ var (
 	globalHolders = map[any]any{}
 )
 
+func getHolder[T privateType]() (EnumHolderPrivate[T], bool) {
+	var zero T
+	publicHolder, ok := globalHolders[zero].(*EnumHolderPublic[T])
+	return EnumHolderPrivate[T]{EnumHolderPublic: publicHolder}, ok
+}
+
 type privateType interface {
 	~int
 }
@@ -42,11 +48,10 @@ func (enum EnumValue[T]) String() string {
 }
 
 func (enum EnumValue[T]) string(holders map[any]any, panicOnUnexisted bool) string {
-	var zero T
-
-	holder, ok := holders[zero].(*EnumHolderPublic[T])
+	holder, ok := getHolder[T]()
 	if !ok {
-		res := fmt.Sprintf("Unexisted holder for type: %v", reflect.TypeOf(zero))
+		var zero T
+		res := fmt.Sprintf("Unexisted holder for type: %T", reflect.TypeOf(zero))
 		if panicOnUnexisted {
 			panic(res)
 		}
@@ -55,6 +60,7 @@ func (enum EnumValue[T]) string(holders map[any]any, panicOnUnexisted bool) stri
 
 	res, ok := holder.intToString[enum.val]
 	if !ok {
+		var zero T
 		res := fmt.Sprintf("Unexisted string value for: %v of type: %v", enum.val, reflect.TypeOf(zero))
 		if panicOnUnexisted {
 			panic(res)
@@ -90,6 +96,10 @@ func newHolder[T privateType](m map[any]any) *EnumHolderPublic[T] {
 	}
 	m[zero] = holder
 	return holder
+}
+func deleteHolder[T privateType]() {
+	var zero T
+	delete(globalHolders, zero)
 }
 
 func (h *EnumHolderPublic[T]) FromInt(val int) (EnumValue[T], error) {
