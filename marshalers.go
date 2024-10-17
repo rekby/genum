@@ -51,7 +51,3 @@ func (enum *EnumValue[T]) UnmarshalBinary(data []byte) error {
 	*enum = newEnum
 	return nil
 }
-
-func newVarintBuf() []byte {
-	return make([]byte, 8)
-}

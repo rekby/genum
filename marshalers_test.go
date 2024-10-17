@@ -103,7 +103,7 @@ func TestTextMarshaler(t *testing.T) {
 func FuzzEnumValueMarshalBinary(f *testing.F) {
 	f.Fuzz(func(t *testing.T, name string, intVal int) {
 		type p BaseType
-		type valType = EnumValue[p]
+		type _ = EnumValue[p]
 
 		_, holder := NewHolders[p]()
 		defer deleteHolder[p]()
